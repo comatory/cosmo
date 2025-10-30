@@ -70,10 +70,10 @@ export class OperationsRepository {
         round(sum(lm.Sum) / sum(lm.Count), 2) as avgDurationMs,
         max(rm.TotalRequests) as totalRequests,
         max(rm.TotalErrors) as totalErrors
-      FROM cosmo.gql_metrics_operations operations
-      INNER JOIN cosmo.operation_latency_metrics_5_30 lm
+      FROM ${this.client.database}.gql_metrics_operations operations
+      INNER JOIN ${this.client.database}.operation_latency_metrics_5_30 lm
       ON operations.OperationHash = lm.OperationHash
-      INNER JOIN cosmo.operation_request_metrics_5_30 rm
+      INNER JOIN ${this.client.database}.operation_request_metrics_5_30 rm
       ON operations.OperationHash = rm.OperationHash
       AND operations.OrganizationID = lm.OrganizationID
       AND operations.FederatedGraphID = lm.FederatedGraphID
