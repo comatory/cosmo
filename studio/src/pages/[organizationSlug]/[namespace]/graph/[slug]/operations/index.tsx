@@ -21,23 +21,39 @@ import {
 } from "@/components/ui/table";
 import { GraphContext } from "@/components/layout/graph-layout";
 import { NextPageWithLayout } from "@/lib/page";
+import { cn } from "@/lib/utils";
 import { useQuery } from "@connectrpc/connect-query";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
 import { useContext } from "react";
 import type { ReactNode } from "react";
+import { HiOutlineCheck } from "react-icons/hi2";
 
 const OperationsTableRow = ({
   children,
+  hasError,
 }: {
   children: ReactNode;
+  hasError: boolean;
 }) => {
   return (
-    <TableRow
-      className=" group cursor-pointer py-1 hover:bg-secondary/30"
-    >
+    <TableRow className={cn("group cursor-pointer py-1 hover:bg-secondary/30", {
+      'bg-destructive/10': hasError,
+    })}>
       {children}
     </TableRow>
+  );
+};
+
+const OperationsStatusTableCell = ({ hasError }: { hasError: boolean }) => {
+  return (
+    <div className="flex items-center space-x-2">
+      {hasError ? (
+        <ExclamationTriangleIcon className="h-5 w-5 mt-2 text-destructive" />
+      ) : (
+        <HiOutlineCheck className="h-5 w-5 mt-2" />
+      )}
+    </div>
   );
 };
 
@@ -49,14 +65,18 @@ const OperationsPage: NextPageWithLayout = () => {
     : 1;
   const limit = Number.parseInt((router.query.pageSize as string) || "10");
 
-  const { data, isLoading, error, refetch } = useQuery(getOperationsPage, {
-    namespace: graphContext?.graph?.namespace,
-    federatedGraphName: graphContext?.graph?.name,
-    limit: limit > 50 ? 50 : limit,
-    offset: (pageNumber - 1) * limit,
-  }, {
+  const { data, isLoading, error, refetch } = useQuery(
+    getOperationsPage,
+    {
+      namespace: graphContext?.graph?.namespace,
+      federatedGraphName: graphContext?.graph?.name,
+      limit: limit > 50 ? 50 : limit,
+      offset: (pageNumber - 1) * limit,
+    },
+    {
       placeholderData: (prev) => prev,
-    });
+    },
+  );
 
   if (isLoading) return <Loader fullscreen />;
 
@@ -105,22 +125,30 @@ const OperationsPage: NextPageWithLayout = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Last seen at</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Last Called</TableHead>
               <TableHead>Requests</TableHead>
               <TableHead>Health</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.operations.map((operation: OperationPageItem) => (
-              <OperationsTableRow key={operation.hash}>
-                <TableCell>{operation.name}</TableCell>
-                <TableCell>
-                  {formatDateTime(new Date(operation.timestamp))}
-                </TableCell>
-                <TableCell>{operation.totalRequestCount.toString()}</TableCell>
-                <TableCell>{operation.totalErrorCount > 0 ? 'Not OK' : '✔️'}</TableCell>
-              </OperationsTableRow>
-            ))}
+            {data.operations.map((operation: OperationPageItem) => {
+              const hasError = operation.totalErrorCount > 0;
+
+              return (
+                <OperationsTableRow key={operation.hash} hasError={hasError}>
+                  <TableCell>{operation.name}</TableCell>
+                  <TableCell>{operation.type}</TableCell>
+                  <TableCell>
+                    {formatDateTime(new Date(operation.timestamp))}
+                  </TableCell>
+                  <TableCell>
+                    {operation.totalRequestCount.toString()}
+                  </TableCell>
+                  <OperationsStatusTableCell hasError={hasError} />
+                </OperationsTableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableWrapper>
