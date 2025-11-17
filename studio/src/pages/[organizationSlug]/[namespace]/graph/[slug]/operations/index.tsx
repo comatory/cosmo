@@ -3,8 +3,13 @@ import {
   GraphPageLayout,
   getGraphLayout,
 } from "@/components/layout/graph-layout";
+import { OperationPageItem } from "@wundergraph/cosmo-connect/dist/platform/v1/platform_pb";
+import { EnumStatusCode } from "@wundergraph/cosmo-connect/dist/common/common_pb";
+import { getOperationsPage } from "@wundergraph/cosmo-connect/dist/platform/v1/platform-PlatformService_connectquery";
+import { formatDateTime } from "@/lib/format-date";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -14,26 +19,84 @@ import {
   TableRow,
   TableWrapper,
 } from "@/components/ui/table";
+import { GraphContext } from "@/components/layout/graph-layout";
 import { NextPageWithLayout } from "@/lib/page";
+import { useQuery } from "@connectrpc/connect-query";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
+import { useContext } from "react";
+import type { ReactNode } from "react";
+
+const OperationsTableRow = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
+  return (
+    <TableRow
+      className=" group cursor-pointer py-1 hover:bg-secondary/30"
+    >
+      {children}
+    </TableRow>
+  );
+};
 
 const OperationsPage: NextPageWithLayout = () => {
   const router = useRouter();
+  const graphContext = useContext(GraphContext);
+  const pageNumber = router.query.page
+    ? parseInt(router.query.page as string)
+    : 1;
+  const limit = Number.parseInt((router.query.pageSize as string) || "10");
 
-  const data = null;
-  const isLoading = false;
+  const { data, isLoading, error, refetch } = useQuery(getOperationsPage, {
+    namespace: graphContext?.graph?.namespace,
+    federatedGraphName: graphContext?.graph?.name,
+    limit: limit > 50 ? 50 : limit,
+    offset: (pageNumber - 1) * limit,
+  }, {
+      placeholderData: (prev) => prev,
+    });
+
   if (isLoading) return <Loader fullscreen />;
 
-  if (!data)
+  if (!isLoading && (error || data?.response?.code !== EnumStatusCode.OK)) {
+    return (
+      <div className="my-auto">
+        <EmptyState
+          icon={<ExclamationTriangleIcon />}
+          title="Could not retrieve operations data"
+          description={
+            data?.response?.details || error?.message || "Please try again"
+          }
+          actions={<Button onClick={() => refetch()}>Retry</Button>}
+        />
+      </div>
+    );
+  }
+
+  if (!data || !data.operations) {
     return (
       <EmptyState
         icon={<ExclamationTriangleIcon />}
         title="Could not retrieve operations"
-        description={""/* TBD */}
+        description={data?.response?.details}
         actions={<Button onClick={() => undefined}>Retry</Button>}
       />
     );
+  }
+
+  if (data.operations.length === 0) {
+    return (
+      <EmptyState
+        icon={<ExclamationTriangleIcon />}
+        title="No operations found"
+        description="No operations have been recorded for this graph."
+      />
+    );
+  }
+
+  const noOfPages = Math.ceil(data.count / limit);
 
   return (
     <div className="flex h-full flex-col gap-y-3">
@@ -41,28 +104,27 @@ const OperationsPage: NextPageWithLayout = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Id</TableHead>
-              <TableHead>Operation name</TableHead>
-              <TableHead>Timestamp</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Last seen at</TableHead>
+              <TableHead>Requests</TableHead>
+              <TableHead>Health</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data ? (
-              <TableRow>
-                <TableCell>-</TableCell>
-                <TableCell>-</TableCell>
-                <TableCell>-</TableCell>
-              </TableRow>
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No results.
+            {data.operations.map((operation: OperationPageItem) => (
+              <OperationsTableRow key={operation.hash}>
+                <TableCell>{operation.name}</TableCell>
+                <TableCell>
+                  {formatDateTime(new Date(operation.timestamp))}
                 </TableCell>
-              </TableRow>
-            )}
+                <TableCell>{operation.totalRequestCount.toString()}</TableCell>
+                <TableCell>{operation.totalErrorCount > 0 ? 'Not OK' : '✔️'}</TableCell>
+              </OperationsTableRow>
+            ))}
           </TableBody>
         </Table>
       </TableWrapper>
+      <Pagination limit={limit} noOfPages={noOfPages} pageNumber={pageNumber} />
     </div>
   );
 };

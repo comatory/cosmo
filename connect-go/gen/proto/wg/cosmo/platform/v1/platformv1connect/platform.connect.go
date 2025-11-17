@@ -526,6 +526,9 @@ const (
 	// PlatformServiceGetOperationsProcedure is the fully-qualified name of the PlatformService's
 	// GetOperations RPC.
 	PlatformServiceGetOperationsProcedure = "/wg.cosmo.platform.v1.PlatformService/GetOperations"
+	// PlatformServiceGetOperationsPageProcedure is the fully-qualified name of the PlatformService's
+	// GetOperationsPage RPC.
+	PlatformServiceGetOperationsPageProcedure = "/wg.cosmo.platform.v1.PlatformService/GetOperationsPage"
 	// PlatformServiceGetClientsFromAnalyticsProcedure is the fully-qualified name of the
 	// PlatformService's GetClientsFromAnalytics RPC.
 	PlatformServiceGetClientsFromAnalyticsProcedure = "/wg.cosmo.platform.v1.PlatformService/GetClientsFromAnalytics"
@@ -710,6 +713,7 @@ var (
 	platformServiceGetProposalsByFederatedGraphMethodDescriptor          = platformServiceServiceDescriptor.Methods().ByName("GetProposalsByFederatedGraph")
 	platformServiceGetProposalChecksMethodDescriptor                     = platformServiceServiceDescriptor.Methods().ByName("GetProposalChecks")
 	platformServiceGetOperationsMethodDescriptor                         = platformServiceServiceDescriptor.Methods().ByName("GetOperations")
+	platformServiceGetOperationsPageMethodDescriptor                     = platformServiceServiceDescriptor.Methods().ByName("GetOperationsPage")
 	platformServiceGetClientsFromAnalyticsMethodDescriptor               = platformServiceServiceDescriptor.Methods().ByName("GetClientsFromAnalytics")
 	platformServiceValidateAndFetchPluginDataMethodDescriptor            = platformServiceServiceDescriptor.Methods().ByName("ValidateAndFetchPluginData")
 	platformServiceLinkSubgraphMethodDescriptor                          = platformServiceServiceDescriptor.Methods().ByName("LinkSubgraph")
@@ -1029,6 +1033,8 @@ type PlatformServiceClient interface {
 	GetProposalChecks(context.Context, *connect.Request[v1.GetProposalChecksRequest]) (*connect.Response[v1.GetProposalChecksResponse], error)
 	// GetOperations returns the operations of a federated graph.
 	GetOperations(context.Context, *connect.Request[v1.GetOperationsRequest]) (*connect.Response[v1.GetOperationsResponse], error)
+	// GetOperationsPage returns the operations page data from gql_metrics_operations table.
+	GetOperationsPage(context.Context, *connect.Request[v1.GetOperationsPageRequest]) (*connect.Response[v1.GetOperationsPageResponse], error)
 	// GetClientsFromAnalytics returns all the clients of the federated graph from the analytics
 	GetClientsFromAnalytics(context.Context, *connect.Request[v1.GetClientsFromAnalyticsRequest]) (*connect.Response[v1.GetClientsFromAnalyticsResponse], error)
 	// ValidateAndFetchPluginData validates the limit of plugins and returns the latest version and token
@@ -2042,6 +2048,12 @@ func NewPlatformServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(platformServiceGetOperationsMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		getOperationsPage: connect.NewClient[v1.GetOperationsPageRequest, v1.GetOperationsPageResponse](
+			httpClient,
+			baseURL+PlatformServiceGetOperationsPageProcedure,
+			connect.WithSchema(platformServiceGetOperationsPageMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 		getClientsFromAnalytics: connect.NewClient[v1.GetClientsFromAnalyticsRequest, v1.GetClientsFromAnalyticsResponse](
 			httpClient,
 			baseURL+PlatformServiceGetClientsFromAnalyticsProcedure,
@@ -2241,6 +2253,7 @@ type platformServiceClient struct {
 	getProposalsByFederatedGraph          *connect.Client[v1.GetProposalsByFederatedGraphRequest, v1.GetProposalsByFederatedGraphResponse]
 	getProposalChecks                     *connect.Client[v1.GetProposalChecksRequest, v1.GetProposalChecksResponse]
 	getOperations                         *connect.Client[v1.GetOperationsRequest, v1.GetOperationsResponse]
+	getOperationsPage                     *connect.Client[v1.GetOperationsPageRequest, v1.GetOperationsPageResponse]
 	getClientsFromAnalytics               *connect.Client[v1.GetClientsFromAnalyticsRequest, v1.GetClientsFromAnalyticsResponse]
 	validateAndFetchPluginData            *connect.Client[v1.ValidateAndFetchPluginDataRequest, v1.ValidateAndFetchPluginDataResponse]
 	linkSubgraph                          *connect.Client[v1.LinkSubgraphRequest, v1.LinkSubgraphResponse]
@@ -3101,6 +3114,11 @@ func (c *platformServiceClient) GetOperations(ctx context.Context, req *connect.
 	return c.getOperations.CallUnary(ctx, req)
 }
 
+// GetOperationsPage calls wg.cosmo.platform.v1.PlatformService.GetOperationsPage.
+func (c *platformServiceClient) GetOperationsPage(ctx context.Context, req *connect.Request[v1.GetOperationsPageRequest]) (*connect.Response[v1.GetOperationsPageResponse], error) {
+	return c.getOperationsPage.CallUnary(ctx, req)
+}
+
 // GetClientsFromAnalytics calls wg.cosmo.platform.v1.PlatformService.GetClientsFromAnalytics.
 func (c *platformServiceClient) GetClientsFromAnalytics(ctx context.Context, req *connect.Request[v1.GetClientsFromAnalyticsRequest]) (*connect.Response[v1.GetClientsFromAnalyticsResponse], error) {
 	return c.getClientsFromAnalytics.CallUnary(ctx, req)
@@ -3438,6 +3456,8 @@ type PlatformServiceHandler interface {
 	GetProposalChecks(context.Context, *connect.Request[v1.GetProposalChecksRequest]) (*connect.Response[v1.GetProposalChecksResponse], error)
 	// GetOperations returns the operations of a federated graph.
 	GetOperations(context.Context, *connect.Request[v1.GetOperationsRequest]) (*connect.Response[v1.GetOperationsResponse], error)
+	// GetOperationsPage returns the operations page data from gql_metrics_operations table.
+	GetOperationsPage(context.Context, *connect.Request[v1.GetOperationsPageRequest]) (*connect.Response[v1.GetOperationsPageResponse], error)
 	// GetClientsFromAnalytics returns all the clients of the federated graph from the analytics
 	GetClientsFromAnalytics(context.Context, *connect.Request[v1.GetClientsFromAnalyticsRequest]) (*connect.Response[v1.GetClientsFromAnalyticsResponse], error)
 	// ValidateAndFetchPluginData validates the limit of plugins and returns the latest version and token
@@ -4447,6 +4467,12 @@ func NewPlatformServiceHandler(svc PlatformServiceHandler, opts ...connect.Handl
 		connect.WithSchema(platformServiceGetOperationsMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	platformServiceGetOperationsPageHandler := connect.NewUnaryHandler(
+		PlatformServiceGetOperationsPageProcedure,
+		svc.GetOperationsPage,
+		connect.WithSchema(platformServiceGetOperationsPageMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	platformServiceGetClientsFromAnalyticsHandler := connect.NewUnaryHandler(
 		PlatformServiceGetClientsFromAnalyticsProcedure,
 		svc.GetClientsFromAnalytics,
@@ -4807,6 +4833,8 @@ func NewPlatformServiceHandler(svc PlatformServiceHandler, opts ...connect.Handl
 			platformServiceGetProposalChecksHandler.ServeHTTP(w, r)
 		case PlatformServiceGetOperationsProcedure:
 			platformServiceGetOperationsHandler.ServeHTTP(w, r)
+		case PlatformServiceGetOperationsPageProcedure:
+			platformServiceGetOperationsPageHandler.ServeHTTP(w, r)
 		case PlatformServiceGetClientsFromAnalyticsProcedure:
 			platformServiceGetClientsFromAnalyticsHandler.ServeHTTP(w, r)
 		case PlatformServiceValidateAndFetchPluginDataProcedure:
@@ -5480,6 +5508,10 @@ func (UnimplementedPlatformServiceHandler) GetProposalChecks(context.Context, *c
 
 func (UnimplementedPlatformServiceHandler) GetOperations(context.Context, *connect.Request[v1.GetOperationsRequest]) (*connect.Response[v1.GetOperationsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("wg.cosmo.platform.v1.PlatformService.GetOperations is not implemented"))
+}
+
+func (UnimplementedPlatformServiceHandler) GetOperationsPage(context.Context, *connect.Request[v1.GetOperationsPageRequest]) (*connect.Response[v1.GetOperationsPageResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("wg.cosmo.platform.v1.PlatformService.GetOperationsPage is not implemented"))
 }
 
 func (UnimplementedPlatformServiceHandler) GetClientsFromAnalytics(context.Context, *connect.Request[v1.GetClientsFromAnalyticsRequest]) (*connect.Response[v1.GetClientsFromAnalyticsResponse], error) {
