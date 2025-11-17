@@ -496,15 +496,20 @@ async function executeOperations(endpoint, token, operations, repeat = 1) {
 }
 
 async function main() {
+  const defaultEndpoint = process.env.LISTEN_ADDR;
+  const defaultToken = process.env.GRAPH_API_TOKEN;
+
   const { values } = parseArgs({
     options: {
       endpoint: {
         type: 'string',
         short: 'e',
+        default: `http://${defaultEndpoint}/graphql`,
       },
       token: {
         type: 'string',
         short: 't',
+        default: defaultToken,
       },
       count: {
         type: 'string',
@@ -516,6 +521,14 @@ async function main() {
       },
     },
   });
+
+  if (defaultEndpoint && !values.endpoint) {
+    console.log('Default endpoint used from .router/.env LISTEN_ADDR');
+  }
+
+  if (defaultToken && !values.token) {
+    console.log('Default token used from .router/.env GRAPH_API_TOKEN');
+  }
 
   if (!values.endpoint || !values.token) {
     console.error(

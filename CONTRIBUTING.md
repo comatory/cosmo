@@ -151,6 +151,21 @@ cd cli && pnpm wgc -h
 
 _Clean up all containers and volumes by running `make infra-down-v`. You can repeat the steps above to bootstrap the platform again._
 
+### Generating mock operations
+
+If you want to develop and have some mock data ready, you can use provided script to generate mocked operations against the demo subgraphs:
+
+```shell
+# Generate 50 operations (default)
+make generate-mock-ops
+
+# Generate custom number of operations
+make generate-mock-ops count=100
+
+# Generate operations with repeat
+make generate-mock-ops count=100 repeat=3
+```
+
 ### Docker Compose
 
 We manage multiple compose files:

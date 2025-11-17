@@ -67,6 +67,11 @@ create-demo:
 delete-demo:
 	./scripts/delete-local-demo.sh
 
+generate-mock-ops:
+	@node --env-file=./router/.env ./scripts/generate-mock-operations.js \
+		--count=$(or $(count),50) \
+		$(if $(repeat),--repeat=$(repeat),)
+
 dev-setup: prerequisites
 	pnpm install
 	pnpm generate
