@@ -63,4 +63,63 @@ export class OperationsViewRepository {
       })),
     };
   }
+
+  public async getOperationClientListByNameHashType({
+    organizationId,
+    graphId,
+    operationName,
+    operationHash,
+    operationType,
+    limit,
+    offset,
+  }: {
+    organizationId: string;
+    graphId: string;
+    operationName: string;
+    operationHash: string;
+    operationType: string;
+    limit: number;
+    offset: number;
+  }) {
+    const query = `
+      SELECT
+        "Timestamp" AS timestamp,
+        "OperationHash" AS hash,
+        "TotalRequests" AS totalRequests,
+        "TotalErrors" AS totalErrors,
+        "ClientName" AS clientName,
+        "ClientVersion" AS clientVersion,
+        COUNT(*) OVER() as count
+      FROM
+        ${this.client.database}.operation_request_metrics_5_30
+      WHERE
+        "OperationName" = '${operationName}'
+        AND "OperationType" = '${operationType}'
+        AND "OperationHash" = '${operationHash}'
+        AND "OrganizationID" = '${organizationId}'
+        AND "FederatedGraphID" = '${graphId}'
+      ORDER BY
+        timestamp DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    const result = await this.client.queryPromise<{
+      timestamp: string;
+      hash: string;
+      totalRequests: string;
+      totalErrors: string;
+      clientName: string;
+      clientVersion: string;
+      count: number;
+    }>(query, { organizationId, graphId, limit, offset });
+
+    return {
+      count: Number(result?.[0].count),
+      clients: result.map(({ count, totalRequests, totalErrors, ...row }) => ({
+        ...row,
+        totalRequests: BigInt(totalRequests),
+        totalErrors: BigInt(totalErrors),
+      })),
+    };
+  }
 }

@@ -22912,6 +22912,195 @@ export class GetOperationsPageResponse extends Message<GetOperationsPageResponse
 }
 
 /**
+ * @generated from message wg.cosmo.platform.v1.OperationDetailClientPageItem
+ */
+export class OperationDetailClientPageItem extends Message<OperationDetailClientPageItem> {
+  /**
+   * @generated from field: string timestamp = 1;
+   */
+  timestamp = "";
+
+  /**
+   * @generated from field: string hash = 2;
+   */
+  hash = "";
+
+  /**
+   * @generated from field: int64 totalRequests = 3;
+   */
+  totalRequests = protoInt64.zero;
+
+  /**
+   * @generated from field: int64 totalErrors = 4;
+   */
+  totalErrors = protoInt64.zero;
+
+  /**
+   * @generated from field: string clientName = 5;
+   */
+  clientName = "";
+
+  /**
+   * @generated from field: string clientVersion = 6;
+   */
+  clientVersion = "";
+
+  constructor(data?: PartialMessage<OperationDetailClientPageItem>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "wg.cosmo.platform.v1.OperationDetailClientPageItem";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "timestamp", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "hash", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "totalRequests", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 4, name: "totalErrors", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 5, name: "clientName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "clientVersion", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): OperationDetailClientPageItem {
+    return new OperationDetailClientPageItem().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): OperationDetailClientPageItem {
+    return new OperationDetailClientPageItem().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): OperationDetailClientPageItem {
+    return new OperationDetailClientPageItem().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: OperationDetailClientPageItem | PlainMessage<OperationDetailClientPageItem> | undefined, b: OperationDetailClientPageItem | PlainMessage<OperationDetailClientPageItem> | undefined): boolean {
+    return proto3.util.equals(OperationDetailClientPageItem, a, b);
+  }
+}
+
+/**
+ * @generated from message wg.cosmo.platform.v1.GetOperationDetailClientPageRequest
+ */
+export class GetOperationDetailClientPageRequest extends Message<GetOperationDetailClientPageRequest> {
+  /**
+   * @generated from field: string namespace = 1;
+   */
+  namespace = "";
+
+  /**
+   * @generated from field: string federatedGraphName = 2;
+   */
+  federatedGraphName = "";
+
+  /**
+   * @generated from field: string operationHash = 3;
+   */
+  operationHash = "";
+
+  /**
+   * @generated from field: string operationName = 4;
+   */
+  operationName = "";
+
+  /**
+   * @generated from field: string operationType = 5;
+   */
+  operationType = "";
+
+  /**
+   * @generated from field: int32 limit = 6;
+   */
+  limit = 0;
+
+  /**
+   * @generated from field: int32 offset = 7;
+   */
+  offset = 0;
+
+  constructor(data?: PartialMessage<GetOperationDetailClientPageRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "wg.cosmo.platform.v1.GetOperationDetailClientPageRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "namespace", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "federatedGraphName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "operationHash", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "operationName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "operationType", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "limit", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 7, name: "offset", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOperationDetailClientPageRequest {
+    return new GetOperationDetailClientPageRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetOperationDetailClientPageRequest {
+    return new GetOperationDetailClientPageRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetOperationDetailClientPageRequest {
+    return new GetOperationDetailClientPageRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetOperationDetailClientPageRequest | PlainMessage<GetOperationDetailClientPageRequest> | undefined, b: GetOperationDetailClientPageRequest | PlainMessage<GetOperationDetailClientPageRequest> | undefined): boolean {
+    return proto3.util.equals(GetOperationDetailClientPageRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message wg.cosmo.platform.v1.GetOperationDetailClientPageResponse
+ */
+export class GetOperationDetailClientPageResponse extends Message<GetOperationDetailClientPageResponse> {
+  /**
+   * @generated from field: wg.cosmo.platform.v1.Response response = 1;
+   */
+  response?: Response;
+
+  /**
+   * @generated from field: repeated wg.cosmo.platform.v1.OperationDetailClientPageItem clients = 2;
+   */
+  clients: OperationDetailClientPageItem[] = [];
+
+  /**
+   * @generated from field: int32 count = 3;
+   */
+  count = 0;
+
+  constructor(data?: PartialMessage<GetOperationDetailClientPageResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "wg.cosmo.platform.v1.GetOperationDetailClientPageResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "response", kind: "message", T: Response },
+    { no: 2, name: "clients", kind: "message", T: OperationDetailClientPageItem, repeated: true },
+    { no: 3, name: "count", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOperationDetailClientPageResponse {
+    return new GetOperationDetailClientPageResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetOperationDetailClientPageResponse {
+    return new GetOperationDetailClientPageResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetOperationDetailClientPageResponse {
+    return new GetOperationDetailClientPageResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetOperationDetailClientPageResponse | PlainMessage<GetOperationDetailClientPageResponse> | undefined, b: GetOperationDetailClientPageResponse | PlainMessage<GetOperationDetailClientPageResponse> | undefined): boolean {
+    return proto3.util.equals(GetOperationDetailClientPageResponse, a, b);
+  }
+}
+
+/**
  * @generated from message wg.cosmo.platform.v1.GetClientsFromAnalyticsRequest
  */
 export class GetClientsFromAnalyticsRequest extends Message<GetClientsFromAnalyticsRequest> {

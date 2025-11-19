@@ -529,6 +529,9 @@ const (
 	// PlatformServiceGetOperationsPageProcedure is the fully-qualified name of the PlatformService's
 	// GetOperationsPage RPC.
 	PlatformServiceGetOperationsPageProcedure = "/wg.cosmo.platform.v1.PlatformService/GetOperationsPage"
+	// PlatformServiceGetOperationDetailClientPageProcedure is the fully-qualified name of the
+	// PlatformService's GetOperationDetailClientPage RPC.
+	PlatformServiceGetOperationDetailClientPageProcedure = "/wg.cosmo.platform.v1.PlatformService/GetOperationDetailClientPage"
 	// PlatformServiceGetClientsFromAnalyticsProcedure is the fully-qualified name of the
 	// PlatformService's GetClientsFromAnalytics RPC.
 	PlatformServiceGetClientsFromAnalyticsProcedure = "/wg.cosmo.platform.v1.PlatformService/GetClientsFromAnalytics"
@@ -714,6 +717,7 @@ var (
 	platformServiceGetProposalChecksMethodDescriptor                     = platformServiceServiceDescriptor.Methods().ByName("GetProposalChecks")
 	platformServiceGetOperationsMethodDescriptor                         = platformServiceServiceDescriptor.Methods().ByName("GetOperations")
 	platformServiceGetOperationsPageMethodDescriptor                     = platformServiceServiceDescriptor.Methods().ByName("GetOperationsPage")
+	platformServiceGetOperationDetailClientPageMethodDescriptor          = platformServiceServiceDescriptor.Methods().ByName("GetOperationDetailClientPage")
 	platformServiceGetClientsFromAnalyticsMethodDescriptor               = platformServiceServiceDescriptor.Methods().ByName("GetClientsFromAnalytics")
 	platformServiceValidateAndFetchPluginDataMethodDescriptor            = platformServiceServiceDescriptor.Methods().ByName("ValidateAndFetchPluginData")
 	platformServiceLinkSubgraphMethodDescriptor                          = platformServiceServiceDescriptor.Methods().ByName("LinkSubgraph")
@@ -1035,6 +1039,8 @@ type PlatformServiceClient interface {
 	GetOperations(context.Context, *connect.Request[v1.GetOperationsRequest]) (*connect.Response[v1.GetOperationsResponse], error)
 	// GetOperationsPage returns the operations page data from gql_metrics_operations table.
 	GetOperationsPage(context.Context, *connect.Request[v1.GetOperationsPageRequest]) (*connect.Response[v1.GetOperationsPageResponse], error)
+	// GetOperationDetailClientPage returns the operation detail client page data from operations table
+	GetOperationDetailClientPage(context.Context, *connect.Request[v1.GetOperationDetailClientPageRequest]) (*connect.Response[v1.GetOperationDetailClientPageResponse], error)
 	// GetClientsFromAnalytics returns all the clients of the federated graph from the analytics
 	GetClientsFromAnalytics(context.Context, *connect.Request[v1.GetClientsFromAnalyticsRequest]) (*connect.Response[v1.GetClientsFromAnalyticsResponse], error)
 	// ValidateAndFetchPluginData validates the limit of plugins and returns the latest version and token
@@ -2054,6 +2060,12 @@ func NewPlatformServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(platformServiceGetOperationsPageMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		getOperationDetailClientPage: connect.NewClient[v1.GetOperationDetailClientPageRequest, v1.GetOperationDetailClientPageResponse](
+			httpClient,
+			baseURL+PlatformServiceGetOperationDetailClientPageProcedure,
+			connect.WithSchema(platformServiceGetOperationDetailClientPageMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 		getClientsFromAnalytics: connect.NewClient[v1.GetClientsFromAnalyticsRequest, v1.GetClientsFromAnalyticsResponse](
 			httpClient,
 			baseURL+PlatformServiceGetClientsFromAnalyticsProcedure,
@@ -2254,6 +2266,7 @@ type platformServiceClient struct {
 	getProposalChecks                     *connect.Client[v1.GetProposalChecksRequest, v1.GetProposalChecksResponse]
 	getOperations                         *connect.Client[v1.GetOperationsRequest, v1.GetOperationsResponse]
 	getOperationsPage                     *connect.Client[v1.GetOperationsPageRequest, v1.GetOperationsPageResponse]
+	getOperationDetailClientPage          *connect.Client[v1.GetOperationDetailClientPageRequest, v1.GetOperationDetailClientPageResponse]
 	getClientsFromAnalytics               *connect.Client[v1.GetClientsFromAnalyticsRequest, v1.GetClientsFromAnalyticsResponse]
 	validateAndFetchPluginData            *connect.Client[v1.ValidateAndFetchPluginDataRequest, v1.ValidateAndFetchPluginDataResponse]
 	linkSubgraph                          *connect.Client[v1.LinkSubgraphRequest, v1.LinkSubgraphResponse]
@@ -3119,6 +3132,12 @@ func (c *platformServiceClient) GetOperationsPage(ctx context.Context, req *conn
 	return c.getOperationsPage.CallUnary(ctx, req)
 }
 
+// GetOperationDetailClientPage calls
+// wg.cosmo.platform.v1.PlatformService.GetOperationDetailClientPage.
+func (c *platformServiceClient) GetOperationDetailClientPage(ctx context.Context, req *connect.Request[v1.GetOperationDetailClientPageRequest]) (*connect.Response[v1.GetOperationDetailClientPageResponse], error) {
+	return c.getOperationDetailClientPage.CallUnary(ctx, req)
+}
+
 // GetClientsFromAnalytics calls wg.cosmo.platform.v1.PlatformService.GetClientsFromAnalytics.
 func (c *platformServiceClient) GetClientsFromAnalytics(ctx context.Context, req *connect.Request[v1.GetClientsFromAnalyticsRequest]) (*connect.Response[v1.GetClientsFromAnalyticsResponse], error) {
 	return c.getClientsFromAnalytics.CallUnary(ctx, req)
@@ -3458,6 +3477,8 @@ type PlatformServiceHandler interface {
 	GetOperations(context.Context, *connect.Request[v1.GetOperationsRequest]) (*connect.Response[v1.GetOperationsResponse], error)
 	// GetOperationsPage returns the operations page data from gql_metrics_operations table.
 	GetOperationsPage(context.Context, *connect.Request[v1.GetOperationsPageRequest]) (*connect.Response[v1.GetOperationsPageResponse], error)
+	// GetOperationDetailClientPage returns the operation detail client page data from operations table
+	GetOperationDetailClientPage(context.Context, *connect.Request[v1.GetOperationDetailClientPageRequest]) (*connect.Response[v1.GetOperationDetailClientPageResponse], error)
 	// GetClientsFromAnalytics returns all the clients of the federated graph from the analytics
 	GetClientsFromAnalytics(context.Context, *connect.Request[v1.GetClientsFromAnalyticsRequest]) (*connect.Response[v1.GetClientsFromAnalyticsResponse], error)
 	// ValidateAndFetchPluginData validates the limit of plugins and returns the latest version and token
@@ -4473,6 +4494,12 @@ func NewPlatformServiceHandler(svc PlatformServiceHandler, opts ...connect.Handl
 		connect.WithSchema(platformServiceGetOperationsPageMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	platformServiceGetOperationDetailClientPageHandler := connect.NewUnaryHandler(
+		PlatformServiceGetOperationDetailClientPageProcedure,
+		svc.GetOperationDetailClientPage,
+		connect.WithSchema(platformServiceGetOperationDetailClientPageMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	platformServiceGetClientsFromAnalyticsHandler := connect.NewUnaryHandler(
 		PlatformServiceGetClientsFromAnalyticsProcedure,
 		svc.GetClientsFromAnalytics,
@@ -4835,6 +4862,8 @@ func NewPlatformServiceHandler(svc PlatformServiceHandler, opts ...connect.Handl
 			platformServiceGetOperationsHandler.ServeHTTP(w, r)
 		case PlatformServiceGetOperationsPageProcedure:
 			platformServiceGetOperationsPageHandler.ServeHTTP(w, r)
+		case PlatformServiceGetOperationDetailClientPageProcedure:
+			platformServiceGetOperationDetailClientPageHandler.ServeHTTP(w, r)
 		case PlatformServiceGetClientsFromAnalyticsProcedure:
 			platformServiceGetClientsFromAnalyticsHandler.ServeHTTP(w, r)
 		case PlatformServiceValidateAndFetchPluginDataProcedure:
@@ -5512,6 +5541,10 @@ func (UnimplementedPlatformServiceHandler) GetOperations(context.Context, *conne
 
 func (UnimplementedPlatformServiceHandler) GetOperationsPage(context.Context, *connect.Request[v1.GetOperationsPageRequest]) (*connect.Response[v1.GetOperationsPageResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("wg.cosmo.platform.v1.PlatformService.GetOperationsPage is not implemented"))
+}
+
+func (UnimplementedPlatformServiceHandler) GetOperationDetailClientPage(context.Context, *connect.Request[v1.GetOperationDetailClientPageRequest]) (*connect.Response[v1.GetOperationDetailClientPageResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("wg.cosmo.platform.v1.PlatformService.GetOperationDetailClientPage is not implemented"))
 }
 
 func (UnimplementedPlatformServiceHandler) GetClientsFromAnalytics(context.Context, *connect.Request[v1.GetClientsFromAnalyticsRequest]) (*connect.Response[v1.GetClientsFromAnalyticsResponse], error) {
