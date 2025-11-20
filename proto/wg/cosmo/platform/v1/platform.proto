@@ -2910,7 +2910,7 @@ message OperationPageItem {
   string type = 3;
   string timestamp = 4;
   int64 totalRequestCount = 5;
-  int64 totalErrorCount = 6;
+  bool hasErrors = 6;
 }
 
 message GetOperationsPageRequest {

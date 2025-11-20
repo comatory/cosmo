@@ -22770,9 +22770,9 @@ export class OperationPageItem extends Message<OperationPageItem> {
   totalRequestCount = protoInt64.zero;
 
   /**
-   * @generated from field: int64 totalErrorCount = 6;
+   * @generated from field: bool hasErrors = 6;
    */
-  totalErrorCount = protoInt64.zero;
+  hasErrors = false;
 
   constructor(data?: PartialMessage<OperationPageItem>) {
     super();
@@ -22787,7 +22787,7 @@ export class OperationPageItem extends Message<OperationPageItem> {
     { no: 3, name: "type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "timestamp", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "totalRequestCount", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
-    { no: 6, name: "totalErrorCount", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 6, name: "hasErrors", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): OperationPageItem {

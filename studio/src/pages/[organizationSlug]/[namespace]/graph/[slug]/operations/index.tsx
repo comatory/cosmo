@@ -149,16 +149,14 @@ const OperationsPage: NextPageWithLayout = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.operations.map((operation: OperationPageItem) => {
-              const hasError = operation.totalErrorCount > 0;
-
-              return (
+            {data.operations.map((operation: OperationPageItem) =>
+              (
                 <OperationsTableRow
                   key={`${operation.type}-${operation.name}-${operation.hash}`}
                   operationType={operation.type}
                   operationName={operation.name}
                   operationHash={operation.hash}
-                  hasError={hasError}
+                  hasError={operation.hasErrors}
                 >
                   <TableCell>{operation.name}</TableCell>
                   <TableCell>{operation.type}</TableCell>
@@ -168,10 +166,10 @@ const OperationsPage: NextPageWithLayout = () => {
                   <TableCell>
                     {operation.totalRequestCount.toString()}
                   </TableCell>
-                  <OperationsStatusTableCell hasError={hasError} />
+                  <OperationsStatusTableCell hasError={operation.hasErrors} />
                 </OperationsTableRow>
-              );
-            })}
+              ))
+            }
           </TableBody>
         </Table>
       </TableWrapper>
