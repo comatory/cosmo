@@ -1,20 +1,22 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ParsedUrlQueryInput } from "querystring";
-import { BiAnalyse } from "react-icons/bi";
-import { IoBarcodeSharp } from "react-icons/io5";
 import { Spacer } from "../ui/spacer";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Toolbar } from "../ui/toolbar";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useCurrentOrganization } from "@/hooks/use-current-organization";
+import { BiAnalyse } from "react-icons/bi";
+import { PiDevices } from "react-icons/pi";
 
 export const OperationsToolbar: React.FC<{
   tab: 'metrics' | 'clients';
   children?: React.ReactNode;
-}> = (props) => {
+}> = ({ tab, children }) => {
   const router = useRouter();
-  const { namespace: { name: namespace } } = useWorkspace();
+  const {
+    namespace: { name: namespace },
+  } = useWorkspace();
   const organizationSlug = useCurrentOrganization()?.slug;
 
   const query: ParsedUrlQueryInput = {
@@ -38,7 +40,7 @@ export const OperationsToolbar: React.FC<{
 
   return (
     <Toolbar>
-      <Tabs value={props.tab} className="w-full md:w-auto">
+      <Tabs value={tab} className="w-full md:w-auto">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="metrics" asChild>
             <Link
@@ -62,14 +64,14 @@ export const OperationsToolbar: React.FC<{
               }}
               className="flex gap-x-2"
             >
-              <IoBarcodeSharp size="18px" />
+              <PiDevices size="18px" />
               Clients
             </Link>
           </TabsTrigger>
         </TabsList>
       </Tabs>
       <Spacer />
-      {props.children}
+      {children}
     </Toolbar>
   );
 };
