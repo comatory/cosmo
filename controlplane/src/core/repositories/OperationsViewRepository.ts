@@ -59,6 +59,51 @@ export class OperationsViewRepository {
     };
   }
 
+  public async getOperationMetadataByNameHashType({
+    organizationId,
+    graphId,
+    operationName,
+    operationHash,
+    operationType,
+  }: {
+    organizationId: string;
+    graphId: string;
+    operationName: string;
+    operationHash: string;
+    operationType: string;
+  }) {
+    const query = `
+      SELECT
+        "OperationType" as type,
+        "OperationContent" as content,
+        "OperationName" as name
+      FROM
+        gql_metrics_operations
+      WHERE
+        "OperationName" = '${operationName}'
+        AND "OperationType" = '${operationType}'
+        AND "OperationHash" = '${operationHash}'
+        AND "OrganizationID" = '${organizationId}'
+        AND "FederatedGraphID" = '${graphId}'
+    `;
+
+    const result = await this.client.queryPromise<{
+      type: string;
+      name: string;
+      content: string;
+    }>(query, {
+      organizationId,
+      graphId,
+      operationName,
+      operationHash,
+      operationType,
+    });
+
+    return {
+      metadata: result?.[0] || null,
+    };
+  }
+
   public async getOperationClientListByNameHashType({
     organizationId,
     graphId,

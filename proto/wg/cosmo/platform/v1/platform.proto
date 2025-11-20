@@ -2926,6 +2926,25 @@ message GetOperationsPageResponse {
   int32 count = 3;
 }
 
+message OperationDetailMetadata {
+  string name = 1;
+  string type = 2;
+  string content = 3;
+}
+
+message GetOperationDetailMetricsPageRequest {
+  string namespace = 1;
+  string federatedGraphName = 2;
+  string operationHash = 3;
+  string operationName = 4;
+  string operationType = 5;
+}
+
+message GetOperationDetailMetricsPageResponse {
+  Response response = 1;
+  OperationDetailMetadata metadata = 2;
+}
+
 message OperationDetailClientPageItem {
   string timestamp = 1;
   string hash = 2;
@@ -3373,6 +3392,8 @@ service PlatformService {
   rpc GetOperations(GetOperationsRequest) returns (GetOperationsResponse) {}
   // GetOperationsPage returns the operations page data from gql_metrics_operations table.
   rpc GetOperationsPage(GetOperationsPageRequest) returns (GetOperationsPageResponse) {}
+  // GetOperationDetailMetricsPage returns the operation detail metrics page data
+  rpc GetOperationDetailMetricsPage(GetOperationDetailMetricsPageRequest) returns (GetOperationDetailMetricsPageResponse) {}
   // GetOperationDetailClientPage returns the operation detail client page data from operations table
   rpc GetOperationDetailClientPage(GetOperationDetailClientPageRequest) returns (GetOperationDetailClientPageResponse) {}
   // GetClientsFromAnalytics returns all the clients of the federated graph from the analytics
