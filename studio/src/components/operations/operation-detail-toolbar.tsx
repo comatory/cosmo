@@ -13,7 +13,7 @@ export const OperationDetailToolbar = ({
   range,
   dateRange,
 }: {
-  range: Range;
+  range?: Range;
   dateRange: DateRange;
 }) => {
   const tracingRetention = useFeatureLimit("tracing-retention", 7);

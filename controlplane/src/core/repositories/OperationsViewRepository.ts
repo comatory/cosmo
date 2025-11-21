@@ -1,4 +1,6 @@
+import { DateRange } from '../../types/index.js';
 import { ClickHouseClient } from '../clickhouse/index.js';
+import { isoDateRangeToTimestamps, getDateRange } from './analytics/util.js';
 
 export class OperationsViewRepository {
   constructor(private client: ClickHouseClient) {}
@@ -51,7 +53,7 @@ export class OperationsViewRepository {
     }>(query, { organizationId, graphId, limit, offset });
 
     return {
-      count: Number(result?.[0].count),
+      count: Number(result?.[0]?.count ?? 0),
       operations: result.map(({ count, totalRequestCount, ...row }) => ({
         ...row,
         totalRequestCount: BigInt(totalRequestCount),
@@ -110,14 +112,23 @@ export class OperationsViewRepository {
     operationName,
     operationHash,
     operationType,
+    range,
+    dateRange,
   }: {
     organizationId: string;
     graphId: string;
     operationName: string;
     operationHash: string;
     operationType: string;
+    range?: number;
+    dateRange?: DateRange<string>;
   }) {
+    const { start, end } = OperationsViewRepository.normalizeDateRange(dateRange, range);
+
     const query = `
+      WITH
+        toDateTime('${start}') AS startDate,
+        toDateTime('${end}') AS endDate
       SELECT
         "ClientName" as name,
         "ClientVersion" as version,
@@ -125,7 +136,8 @@ export class OperationsViewRepository {
       FROM
         ${this.client.database}.operation_request_metrics_5_30
       WHERE
-        "OperationName" = '${operationName}'
+        "Timestamp" >= startDate AND "Timestamp" <= endDate
+        AND "OperationName" = '${operationName}'
         AND "OperationType" = '${operationType}'
         AND "OperationHash" = '${operationHash}'
         AND "OrganizationID" = '${organizationId}'
@@ -167,6 +179,8 @@ export class OperationsViewRepository {
     operationType,
     limit,
     offset,
+    range,
+    dateRange,
   }: {
     organizationId: string;
     graphId: string;
@@ -175,8 +189,15 @@ export class OperationsViewRepository {
     operationType: string;
     limit: number;
     offset: number;
+    range?: number;
+    dateRange?: DateRange<string>;
   }) {
+    const { start, end } = OperationsViewRepository.normalizeDateRange(dateRange, range);
+
     const query = `
+      WITH
+        toDateTime('${start}') AS startDate,
+        toDateTime('${end}') AS endDate
       SELECT
         "Timestamp" AS timestamp,
         "OperationHash" AS hash,
@@ -188,7 +209,8 @@ export class OperationsViewRepository {
       FROM
         ${this.client.database}.operation_request_metrics_5_30
       WHERE
-        "OperationName" = '${operationName}'
+        timestamp >= startDate AND "Timestamp" <= endDate
+        AND "OperationName" = '${operationName}'
         AND "OperationType" = '${operationType}'
         AND "OperationHash" = '${operationHash}'
         AND "OrganizationID" = '${organizationId}'
@@ -209,12 +231,31 @@ export class OperationsViewRepository {
     }>(query, { organizationId, graphId, limit, offset });
 
     return {
-      count: Number(result?.[0].count),
+      count: Number(result?.[0]?.count ?? 0),
       clients: result.map(({ count, totalRequests, totalErrors, ...row }) => ({
         ...row,
         totalRequests: BigInt(totalRequests),
         totalErrors: BigInt(totalErrors),
       })),
     };
+  }
+
+  private static normalizeDateRange(
+    dateRange?: DateRange<string>,
+    range?: number,
+  ): {
+    start: number;
+    end: number;
+  } {
+    if (dateRange && dateRange.start > dateRange.end) {
+      const tmp = dateRange.start;
+      dateRange.start = dateRange.end;
+      dateRange.end = tmp;
+    }
+
+    const parsedDateRange = isoDateRangeToTimestamps(dateRange, range);
+    const [start, end] = getDateRange(parsedDateRange);
+
+    return { start, end };
   }
 }

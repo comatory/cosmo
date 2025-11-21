@@ -23038,6 +23038,16 @@ export class GetOperationDetailMetricsPageRequest extends Message<GetOperationDe
    */
   operationType = "";
 
+  /**
+   * @generated from field: wg.cosmo.platform.v1.DateRange dateRange = 6;
+   */
+  dateRange?: DateRange;
+
+  /**
+   * @generated from field: optional int32 range = 7;
+   */
+  range?: number;
+
   constructor(data?: PartialMessage<GetOperationDetailMetricsPageRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -23051,6 +23061,8 @@ export class GetOperationDetailMetricsPageRequest extends Message<GetOperationDe
     { no: 3, name: "operationHash", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "operationName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "operationType", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "dateRange", kind: "message", T: DateRange },
+    { no: 7, name: "range", kind: "scalar", T: 5 /* ScalarType.INT32 */, opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOperationDetailMetricsPageRequest {
@@ -23225,6 +23237,16 @@ export class GetOperationDetailClientPageRequest extends Message<GetOperationDet
    */
   offset = 0;
 
+  /**
+   * @generated from field: wg.cosmo.platform.v1.DateRange dateRange = 8;
+   */
+  dateRange?: DateRange;
+
+  /**
+   * @generated from field: optional int32 range = 9;
+   */
+  range?: number;
+
   constructor(data?: PartialMessage<GetOperationDetailClientPageRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -23240,6 +23262,8 @@ export class GetOperationDetailClientPageRequest extends Message<GetOperationDet
     { no: 5, name: "operationType", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "limit", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 7, name: "offset", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 8, name: "dateRange", kind: "message", T: DateRange },
+    { no: 9, name: "range", kind: "scalar", T: 5 /* ScalarType.INT32 */, opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOperationDetailClientPageRequest {

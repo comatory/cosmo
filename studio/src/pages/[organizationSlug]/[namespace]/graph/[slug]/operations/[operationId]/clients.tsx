@@ -17,6 +17,7 @@ import { useOperationClientsState } from "@/components/operations/use-operation-
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { formatISO } from "date-fns";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { useContext } from "react";
@@ -50,6 +51,13 @@ const OperationDetailsPage: NextPageWithLayout = () => {
       operationHash: hash,
       operationName: name,
       operationType: type,
+      range: router.query.dateRange ? undefined : range,
+      dateRange: router.query.dateRange
+        ? {
+            start: formatISO(dateRange.start),
+            end: formatISO(dateRange.end),
+          }
+        : undefined,
     },
     {
       placeholderData: (prev) => prev,
@@ -80,16 +88,6 @@ const OperationDetailsPage: NextPageWithLayout = () => {
         title="Could not retrieve operation list"
         description={data?.response?.details}
         actions={<Button onClick={() => undefined}>Retry</Button>}
-      />
-    );
-  }
-
-  if (data.clients.length === 0) {
-    return (
-      <EmptyState
-        icon={<ExclamationTriangleIcon />}
-        title="No operation list found"
-        description="This operation has no related data"
       />
     );
   }

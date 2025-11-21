@@ -7,9 +7,10 @@ import {
   GetOperationDetailMetricsPageResponse,
 } from '@wundergraph/cosmo-connect/dist/platform/v1/platform_pb';
 import type { RouterOptions } from '../../routes.js';
+import { OrganizationRepository } from '../../repositories/OrganizationRepository.js';
 import { FederatedGraphRepository } from '../../repositories/FederatedGraphRepository.js';
 import { OperationsViewRepository } from '../../repositories/OperationsViewRepository.js';
-import { enrichLogger, getLogger, handleError } from '../../util.js';
+import { enrichLogger, getLogger, handleError, validateDateRanges } from '../../util.js';
 
 export function getOperationDetailMetricsPage(
   opts: RouterOptions,
@@ -32,6 +33,7 @@ export function getOperationDetailMetricsPage(
     logger = enrichLogger(ctx, logger, authContext);
 
     const fedGraphRepo = new FederatedGraphRepository(logger, opts.db, authContext.organizationId);
+    const orgRepo = new OrganizationRepository(logger, opts.db, opts.billingDefaultPlanId);
     const graph = await fedGraphRepo.byName(req.federatedGraphName, req.namespace);
     if (!graph) {
       return {
@@ -42,6 +44,17 @@ export function getOperationDetailMetricsPage(
         topClients: [],
       };
     }
+
+    const analyticsRetention = await orgRepo.getFeature({
+      organizationId: authContext.organizationId,
+      featureId: 'analytics-retention',
+    });
+
+    const { range, dateRange } = validateDateRanges({
+      limit: analyticsRetention?.limit ?? 7,
+      range: req.range,
+      dateRange: req.dateRange,
+    });
 
     const repo = new OperationsViewRepository(opts.chClient);
     const metadata = await repo.getOperationMetadataByNameHashType({
@@ -57,6 +70,8 @@ export function getOperationDetailMetricsPage(
       operationName: req.operationName,
       operationHash: req.operationHash,
       operationType: req.operationType,
+      range,
+      dateRange,
     });
 
     return {

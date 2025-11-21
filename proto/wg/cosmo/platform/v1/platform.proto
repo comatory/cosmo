@@ -2944,6 +2944,8 @@ message GetOperationDetailMetricsPageRequest {
   string operationHash = 3;
   string operationName = 4;
   string operationType = 5;
+  DateRange dateRange = 6;
+  optional int32 range = 7;
 }
 
 message GetOperationDetailMetricsPageResponse {
@@ -2969,6 +2971,8 @@ message GetOperationDetailClientPageRequest {
   string operationType = 5;
   int32 limit = 6;
   int32 offset = 7;
+  DateRange dateRange = 8;
+  optional int32 range = 9;
 }
 
 message GetOperationDetailClientPageResponse {

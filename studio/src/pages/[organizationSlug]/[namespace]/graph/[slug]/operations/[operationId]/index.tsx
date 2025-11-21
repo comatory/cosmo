@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
+import { formatISO } from "date-fns";
 import Link from "next/link";
 import { useContext } from "react";
 import { CodeViewer } from "@/components/code-viewer";
@@ -42,6 +43,13 @@ const OperationDetailsPage: NextPageWithLayout = () => {
       operationHash: hash,
       operationName: name,
       operationType: type,
+      range,
+      dateRange: range
+        ? undefined
+        : {
+            start: formatISO(dateRange.start),
+            end: formatISO(dateRange.end),
+          },
     },
     {
       placeholderData: (prev) => prev,
