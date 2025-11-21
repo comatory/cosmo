@@ -26,6 +26,14 @@ export function getOperationDetailMetricsPage(
           code: EnumStatusCode.ERR_ANALYTICS_DISABLED,
         },
         topClients: [],
+        requestMetrics: {
+          requests: [],
+          sum: 0n,
+        },
+        requestErrorMetrics: {
+          requests: [],
+          sum: 0n,
+        },
       };
     }
 
@@ -42,6 +50,14 @@ export function getOperationDetailMetricsPage(
           details: `Federated graph '${req.federatedGraphName}' not found`,
         },
         topClients: [],
+        requestMetrics: {
+          requests: [],
+          sum: 0n,
+        },
+        requestErrorMetrics: {
+          requests: [],
+          sum: 0n,
+        },
       };
     }
 
@@ -73,6 +89,15 @@ export function getOperationDetailMetricsPage(
       range,
       dateRange,
     });
+    const requests = await repo.getRequestsForOperationByNameHashType({
+      organizationId: authContext.organizationId,
+      graphId: graph.id,
+      operationName: req.operationName,
+      operationHash: req.operationHash,
+      operationType: req.operationType,
+      range,
+      dateRange,
+    });
 
     return {
       response: {
@@ -80,6 +105,7 @@ export function getOperationDetailMetricsPage(
       },
       ...metadata,
       ...topClients,
+      ...requests,
     };
   });
 }

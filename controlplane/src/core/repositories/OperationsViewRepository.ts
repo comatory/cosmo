@@ -240,6 +240,100 @@ export class OperationsViewRepository {
     };
   }
 
+  public async getRequestsForOperationByNameHashType({
+    organizationId,
+    graphId,
+    operationName,
+    operationHash,
+    operationType,
+    range,
+    dateRange,
+  }: {
+    organizationId: string;
+    graphId: string;
+    operationName: string;
+    operationHash: string;
+    operationType: string;
+    range?: number;
+    dateRange?: DateRange<string>;
+  }) {
+    const { start, end } = OperationsViewRepository.normalizeDateRange(dateRange, range);
+
+    const metricsQuery = `
+      WITH
+        toDateTime('${start}') AS startDate,
+        toDateTime('${end}') AS endDate
+      SELECT
+        toStartOfInterval(startDate + toIntervalMinute(n.number * 5), INTERVAL 5 MINUTE) as timestamp,
+        sum(oprm."TotalRequests") as totalRequests,
+        sum(oprm."TotalErrors") as totalErrors
+      FROM
+        numbers(toUInt32((toUnixTimestamp(endDate) - toUnixTimestamp(startDate)) / 300)) AS n
+      LEFT JOIN ${this.client.database}.operation_request_metrics_5_30 AS oprm
+        ON toStartOfInterval(oprm."Timestamp", INTERVAL 5 MINUTE) = timestamp
+        AND oprm."Timestamp" >= startDate
+        AND oprm."Timestamp" <= endDate
+        AND oprm."OperationName" = '${operationName}'
+        AND oprm."OperationType" = '${operationType}'
+        AND oprm."OperationHash" = '${operationHash}'
+        AND oprm."OrganizationID" = '${organizationId}'
+        AND oprm."FederatedGraphID" = '${graphId}'
+      GROUP BY timestamp
+      ORDER BY timestamp ASC
+    `;
+
+    const sumQuery = `
+      SELECT
+        sum("TotalRequests") as totalRequestCount,
+        sum("TotalErrors") as totalErrorCount
+      FROM
+        ${this.client.database}.operation_request_metrics_5_30
+      WHERE
+        "OperationName" = '${operationName}'
+        AND "OperationType" = '${operationType}'
+        AND "OperationHash" = '${operationHash}'
+        AND "OrganizationID" = '${organizationId}'
+        AND "FederatedGraphID" = '${graphId}'
+      GROUP BY
+        "OperationName", "OperationHash", "OperationType"
+    `;
+
+    const metricsResultQueryPromise = this.client.queryPromise<{
+      timestamp: string;
+      totalRequests: string;
+      totalErrors: string;
+    }>(metricsQuery);
+    const sumResultQueryPromise = this.client.queryPromise<{
+      totalRequestCount: string;
+      totalErrorCount: string;
+    }>(sumQuery);
+
+    const [result, sumResult] = await Promise.all([metricsResultQueryPromise, sumResultQueryPromise]);
+
+    const requestMetricList = result.map(({ timestamp, totalRequests }) => ({
+      timestamp,
+      count: BigInt(totalRequests),
+    }));
+    const requestErrorMetricList = result.map(({ timestamp, totalErrors }) => ({
+      timestamp,
+      count: BigInt(totalErrors),
+    }));
+
+    const sumRequests = sumResult[0]?.totalRequestCount ? BigInt(sumResult[0]?.totalRequestCount) : 0n;
+    const sumErrors = sumResult[0]?.totalErrorCount ? BigInt(sumResult[0]?.totalErrorCount) : 0n;
+
+    return {
+      requestMetrics: {
+        requests: requestMetricList,
+        sum: sumRequests,
+      },
+      requestErrorMetrics: {
+        requests: requestErrorMetricList,
+        sum: sumErrors,
+      },
+    };
+  }
+
   private static normalizeDateRange(
     dateRange?: DateRange<string>,
     range?: number,

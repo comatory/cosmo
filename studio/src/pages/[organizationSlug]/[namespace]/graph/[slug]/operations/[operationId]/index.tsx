@@ -15,10 +15,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getInfoTip } from "@/components/analytics/metrics";
+import type { Range } from "@/components/date-picker-with-range";
+import { InfoTooltip } from "@/components/info-tooltip";
 import { OperationsToolbar } from "@/components/operations/operations-toolbar";
 import { OperationDetailToolbar } from "@/components/operations/operation-detail-toolbar";
 import { useOperationClientsState } from "@/components/operations/use-operation-clients-state";
 import { ClientsChart } from "@/components/operations/clients-chart";
+import { RequestsChart } from "@/components/operations/requests-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
@@ -29,8 +33,24 @@ import {
 import { useRouter } from "next/router";
 import { formatISO } from "date-fns";
 import Link from "next/link";
-import { useContext } from "react";
+import { useContext, useId } from "react";
 import { CodeViewer } from "@/components/code-viewer";
+
+const formatRequestMetricsTooltip = ({
+  sum,
+  range,
+}: {
+  sum?: bigint;
+  range?: Range;
+}) => {
+  if (sum === undefined) {
+    return `No requests in ${getInfoTip(range)}`;
+  }
+
+  return `${sum.toString()} ${sum > 1 ? "requests" : "request"} in ${getInfoTip(
+    range,
+  )}`;
+};
 
 const OperationDetailsPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -43,6 +63,7 @@ const OperationDetailsPage: NextPageWithLayout = () => {
     namespace: { name: namespace },
   } = useWorkspace();
   const { range, dateRange } = useOperationClientsState();
+  const syncId = useId();
 
   const graphContext = useContext(GraphContext);
   const { data, isLoading, error, refetch } = useQuery(
@@ -138,7 +159,6 @@ const OperationDetailsPage: NextPageWithLayout = () => {
               </dl>
             </div>
           </div>
-
           {data.topClients.length > 0 && (
             <Card className="bg-transparent">
               <CardHeader className="flex flex-row items-start py-2">
@@ -179,6 +199,46 @@ const OperationDetailsPage: NextPageWithLayout = () => {
               </CardContent>
             </Card>
           )}
+          <Card className="bg-transparent">
+            <CardHeader>
+              <div className="flex space-x-2">
+                <CardTitle>Requests over time</CardTitle>
+                <InfoTooltip>
+                  {formatRequestMetricsTooltip({
+                    sum: data.requestMetrics?.sum,
+                    range,
+                  })}
+                </InfoTooltip>
+              </div>
+            </CardHeader>
+            <CardContent className="h-48 border-b pb-2">
+              <RequestsChart
+                data={data.requestMetrics?.requests || []}
+                syncId={syncId}
+                strokeStyle="normal"
+              />
+            </CardContent>
+          </Card>
+          <Card className="bg-transparent">
+            <CardHeader>
+              <div className="flex space-x-2">
+                <CardTitle>Error requests over time</CardTitle>
+                <InfoTooltip>
+                  {formatRequestMetricsTooltip({
+                    sum: data.requestErrorMetrics?.sum,
+                    range,
+                  })}
+                </InfoTooltip>
+              </div>
+            </CardHeader>
+            <CardContent className="h-48 border-b pb-2">
+              <RequestsChart
+                data={data.requestErrorMetrics?.requests || []}
+                syncId={syncId}
+                strokeStyle="error"
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </GraphPageLayout>

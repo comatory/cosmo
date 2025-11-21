@@ -2926,6 +2926,16 @@ message GetOperationsPageResponse {
   int32 count = 3;
 }
 
+message OperationDetailRequestMetric {
+  string timestamp = 1;
+  int64 count = 2;
+}
+
+message OperationDetailRequestMetrics {
+  repeated OperationDetailRequestMetric requests = 1;
+  int64 sum = 2;
+}
+
 message OperationDetailMetadata {
   string name = 1;
   string type = 2;
@@ -2952,6 +2962,8 @@ message GetOperationDetailMetricsPageResponse {
   Response response = 1;
   OperationDetailMetadata metadata = 2;
   repeated OperationDetailTopClientNames topClients = 3;
+  OperationDetailRequestMetrics requestMetrics = 4;
+  OperationDetailRequestMetrics requestErrorMetrics = 5;
 }
 
 message OperationDetailClientPageItem {
