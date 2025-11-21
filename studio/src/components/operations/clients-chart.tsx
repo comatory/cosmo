@@ -1,0 +1,59 @@
+import { OperationDetailTopClientNames } from "@wundergraph/cosmo-connect/dist/platform/v1/platform_pb";
+import BarList from "@/components/analytics/barlist";
+import { useCallback } from "react";
+
+export const ClientsChart = ({
+  data,
+}: {
+  data: OperationDetailTopClientNames[];
+  }) => {
+  const valueFormatter = useCallback((number: number) => {
+    if (number > Number.MAX_SAFE_INTEGER) {
+      return `${Number.MAX_SAFE_INTEGER.toLocaleString()}+`;
+    }
+
+    return number.toString();
+  }, []);
+
+  const normalizeCount = useCallback((count: BigInt): number => {
+    const number = Number(count);
+
+    return number;
+  }, []);
+
+  const renderName = useCallback((name: string) => {
+    if (name.trim() === "") {
+      return "-";
+    }
+
+    const boundedName = name.slice(0, 14);
+
+    if (boundedName.length < name.length) {
+      return `${boundedName}…`;
+    }
+
+    return boundedName;
+  }, [])
+
+  return (
+      <BarList
+        data={data.map((row) => ({
+          key: row.name + row.version,
+          value: row.count ? normalizeCount(row.count) : 0,
+          name: (
+            <div className="flex items-center">
+              <span className="flex w-32 truncate shrink-0">
+                {renderName(row.name)}
+              </span>
+              <span className="truncate">
+                {row.version.slice(0, 15) || "-------"}
+              </span>
+            </div>
+          ),
+        }))}
+        valueFormatter={valueFormatter}
+        rowHeight={4}
+        rowClassName="bg-muted text-muted-foreground hover:text-foreground"
+      />
+  )
+}
