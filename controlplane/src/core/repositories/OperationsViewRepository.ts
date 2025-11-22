@@ -265,8 +265,8 @@ export class OperationsViewRepository {
         toDateTime('${end}') AS endDate
       SELECT
         toStartOfInterval(startDate + toIntervalMinute(n.number * 5), INTERVAL 5 MINUTE) as timestamp,
-        sum(oprm."TotalRequests") as totalRequests,
-        sum(oprm."TotalErrors") as totalErrors
+        sum(oprm."TotalRequests") as requests,
+        sum(oprm."TotalErrors") as errors
       FROM
         numbers(toUInt32((toUnixTimestamp(endDate) - toUnixTimestamp(startDate)) / 300)) AS n
       LEFT JOIN ${this.client.database}.operation_request_metrics_5_30 AS oprm
@@ -300,8 +300,8 @@ export class OperationsViewRepository {
 
     const metricsResultQueryPromise = this.client.queryPromise<{
       timestamp: string;
-      totalRequests: string;
-      totalErrors: string;
+      requests: string;
+      errors: string;
     }>(metricsQuery);
     const sumResultQueryPromise = this.client.queryPromise<{
       totalRequestCount: string;
@@ -310,26 +310,20 @@ export class OperationsViewRepository {
 
     const [result, sumResult] = await Promise.all([metricsResultQueryPromise, sumResultQueryPromise]);
 
-    const requestMetricList = result.map(({ timestamp, totalRequests }) => ({
+    const requests = result.map(({ timestamp, requests, errors }) => ({
       timestamp,
-      count: BigInt(totalRequests),
-    }));
-    const requestErrorMetricList = result.map(({ timestamp, totalErrors }) => ({
-      timestamp,
-      count: BigInt(totalErrors),
+      requests: BigInt(requests),
+      errors: BigInt(errors),
     }));
 
-    const sumRequests = sumResult[0]?.totalRequestCount ? BigInt(sumResult[0]?.totalRequestCount) : 0n;
-    const sumErrors = sumResult[0]?.totalErrorCount ? BigInt(sumResult[0]?.totalErrorCount) : 0n;
+    const totalRequestCount = sumResult[0]?.totalRequestCount ? BigInt(sumResult[0]?.totalRequestCount) : 0n;
+    const totalErrorCount = sumResult[0]?.totalErrorCount ? BigInt(sumResult[0]?.totalErrorCount) : 0n;
 
     return {
       requestMetrics: {
-        requests: requestMetricList,
-        sum: sumRequests,
-      },
-      requestErrorMetrics: {
-        requests: requestErrorMetricList,
-        sum: sumErrors,
+        requests,
+        totalRequestCount,
+        totalErrorCount,
       },
     };
   }

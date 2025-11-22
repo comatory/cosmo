@@ -1,4 +1,3 @@
-import { OperationDetailRequestMetrics } from "@wundergraph/cosmo-connect/dist/platform/v1/platform_pb";
 import {
   ResponsiveContainer,
   XAxis,
@@ -12,41 +11,28 @@ import { formatDateTime } from "@/lib/format-date";
 const tickFormatter = (tick: number) =>
   tick === 0 || tick % 1 != 0 ? "" : `${tick}`;
 
-const getStrokeColor = (strokeStyle: "normal" | "error") => {
-  switch (strokeStyle) {
-    case "normal":
-      return "hsl(var(--chart-primary))";
-    case "error":
-      return "hsl(var(--destructive))";
-    default:
-      return "hsl(var(--chart-primary))";
-  }
-};
-
 export const RequestsChart = ({
   data,
-  strokeStyle,
   syncId,
 }: {
-  data: OperationDetailRequestMetrics['requests'];
-  strokeStyle: "normal" | "error";
+  data: { timestamp: string; requests: bigint; errors: bigint}[];
   syncId: string;
 }) => {
-  const chartData = data.map(({ count, timestamp, ...rest }) => {
+
+  const chartData = data.map(({ requests, errors, timestamp, ...rest }) => {
     const isoTimestamp = timestamp.replace(" ", "T") + "Z";
     const timestampMs = new Date(isoTimestamp).getTime();
 
     return {
       ...rest,
-      count: Number(count),
+      requests: Number(requests),
+      errors: Number(errors),
       timestamp: timestampMs,
     };
   });
-
   const timestamps = chartData.map((d) => d.timestamp);
   const minTimestamp = Math.min(...timestamps);
   const maxTimestamp = Math.max(...timestamps);
-  const strokeColor = getStrokeColor(strokeStyle);
 
   return (
     <ResponsiveContainer width="99%" height="100%">
@@ -56,13 +42,23 @@ export const RequestsChart = ({
         syncId={syncId}
       >
         <Line
-          name="count"
+          name="Requests"
           type="monotone"
-          dataKey="count"
+          dataKey="requests"
           animationDuration={300}
           dot={false}
           strokeWidth={2}
-          stroke={strokeColor}
+          stroke="hsl(var(--chart-primary))"
+        />
+
+        <Line
+          name="Errors"
+          type="monotone"
+          dataKey="errors"
+          animationDuration={300}
+          dot={false}
+          strokeWidth={2}
+          stroke="hsl(var(--destructive))"
         />
 
         <XAxis

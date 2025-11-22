@@ -28,11 +28,8 @@ export function getOperationDetailMetricsPage(
         topClients: [],
         requestMetrics: {
           requests: [],
-          sum: 0n,
-        },
-        requestErrorMetrics: {
-          requests: [],
-          sum: 0n,
+          totalRequestCount: 0n,
+          totalErrorCount: 0n,
         },
       };
     }
@@ -52,11 +49,8 @@ export function getOperationDetailMetricsPage(
         topClients: [],
         requestMetrics: {
           requests: [],
-          sum: 0n,
-        },
-        requestErrorMetrics: {
-          requests: [],
-          sum: 0n,
+          totalRequestCount: 0n,
+          totalErrorCount: 0n,
         },
       };
     }

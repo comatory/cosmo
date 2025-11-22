@@ -159,87 +159,63 @@ const OperationDetailsPage: NextPageWithLayout = () => {
               </dl>
             </div>
           </div>
-          {data.topClients.length > 0 && (
-            <Card className="bg-transparent">
-              <CardHeader className="flex flex-row items-start py-2">
-                <div className="flex-1">
-                  <div className="flex space-x-2 text-sm">
-                    <Tooltip delayDuration={200}>
-                      <TooltipTrigger asChild>
-                        <h4 className="group text-sm font-medium">
-                          <Link
-                            href={{
-                              pathname: `${router.pathname}/clients`,
-                              query: {
-                                organizationSlug,
-                                namespace,
-                                slug: router.query.slug,
-                                range,
-                                dateRange: router.query.dateRange ?? undefined,
-                                ...router.query,
-                              },
-                            }}
-                            className="inline-flex rounded-md px-2 py-1 hover:bg-muted"
-                          >
-                            Top {data.topClients.length}{" "}
-                            {data.topClients.length === 1
-                              ? "Client"
-                              : "Clients"}
-                            <ChevronRightIcon className="h4 ml-1 w-4 transition-all group-hover:ml-2" />
-                          </Link>
-                        </h4>
-                      </TooltipTrigger>
-                      <TooltipContent>View all clients</TooltipContent>
-                    </Tooltip>
-                  </div>
+          <Card className="bg-transparent">
+            <CardHeader className="flex flex-row items-start py-2">
+              <div className="flex-1">
+                <div className="flex space-x-2 text-sm">
+                  <Tooltip delayDuration={200}>
+                    <TooltipTrigger asChild>
+                      <h4 className="group text-sm font-medium">
+                        <Link
+                          href={{
+                            pathname: `${router.pathname}/clients`,
+                            query: {
+                              organizationSlug,
+                              namespace,
+                              slug: router.query.slug,
+                              range,
+                              dateRange: router.query.dateRange ?? undefined,
+                              ...router.query,
+                            },
+                          }}
+                          className="inline-flex rounded-md px-2 py-1 hover:bg-muted"
+                        >
+                          Top {data.topClients.length}{" "}
+                          {data.topClients.length === 1 ? "Client" : "Clients"}
+                          <ChevronRightIcon className="h4 ml-1 w-4 transition-all group-hover:ml-2" />
+                        </Link>
+                      </h4>
+                    </TooltipTrigger>
+                    <TooltipContent>View all clients</TooltipContent>
+                  </Tooltip>
                 </div>
-              </CardHeader>
-              <CardContent className="border-b pb-2">
-                <ClientsChart data={data?.topClients || []} />
-              </CardContent>
-            </Card>
-          )}
-          <Card className="bg-transparent">
-            <CardHeader>
-              <div className="flex space-x-2">
-                <CardTitle>Requests over time</CardTitle>
-                <InfoTooltip>
-                  {formatRequestMetricsTooltip({
-                    sum: data.requestMetrics?.sum,
-                    range,
-                  })}
-                </InfoTooltip>
               </div>
             </CardHeader>
-            <CardContent className="h-48 border-b pb-2">
-              <RequestsChart
-                data={data.requestMetrics?.requests || []}
-                syncId={syncId}
-                strokeStyle="normal"
-              />
-            </CardContent>
-          </Card>
-          <Card className="bg-transparent">
-            <CardHeader>
-              <div className="flex space-x-2">
-                <CardTitle>Error requests over time</CardTitle>
-                <InfoTooltip>
-                  {formatRequestMetricsTooltip({
-                    sum: data.requestErrorMetrics?.sum,
-                    range,
-                  })}
-                </InfoTooltip>
-              </div>
-            </CardHeader>
-            <CardContent className="h-48 border-b pb-2">
-              <RequestsChart
-                data={data.requestErrorMetrics?.requests || []}
-                syncId={syncId}
-                strokeStyle="error"
-              />
+            <CardContent className="border-b pb-2">
+              <ClientsChart data={data?.topClients || []} />
             </CardContent>
           </Card>
         </div>
+
+        <Card className="bg-transparent">
+          <CardHeader>
+            <div className="flex space-x-2">
+              <CardTitle>Requests over time</CardTitle>
+              <InfoTooltip>
+                {formatRequestMetricsTooltip({
+                  sum: data.requestMetrics?.totalRequestCount,
+                  range,
+                })}
+              </InfoTooltip>
+            </div>
+          </CardHeader>
+          <CardContent className="h-48 border-b pb-2">
+            <RequestsChart
+              data={data.requestMetrics?.requests || []}
+              syncId={syncId}
+            />
+          </CardContent>
+        </Card>
       </div>
     </GraphPageLayout>
   );
